@@ -1,4 +1,4 @@
-﻿#include<iostream>
+#include<iostream>
 #include <string>
 #include <fstream>
 #include <cstdlib>
@@ -64,7 +64,7 @@ void mergesort(int* arr, int l, int r, bool n)
     if (l >= r)
         return;
     int m = (l + r - 1) / 2;
-    if (n)
+    if (n && (l-m > 100000))
     {
         // если элементов в левой части больше чем 10000
         // вызываем асинхронно рекурсию для правой части
@@ -72,18 +72,19 @@ void mergesort(int* arr, int l, int r, bool n)
             {
                 mergesort(arr, l, m, n);
             });
+        mergesort(arr, m + 1, r, n);
     }
     else 
     {
         mergesort(arr, l, m, n);
         mergesort(arr, m + 1, r, n);
-        merge(arr, l, m, r);
     }
+    merge(arr, l, m, r);
 }
 
 int main(int* arrgc, char const * argv[])
 {
-    int N = 10000000;                                    // длинна массива
+    int N = 100000000;                                    // длинна массива
     int* rand_arr = new int[N];
     bool treadsn = false;
     srand(time(nullptr));                              // используем текущее время, чтобы сгенерировать рандомные значения
@@ -95,18 +96,22 @@ int main(int* arrgc, char const * argv[])
     //Сортируем без деления на потоки 
     auto start = chrono::high_resolution_clock::now(); // сохраняем время начала работы алгоритма
     mergesort(rand_arr, 0, N - 1, treadsn);
-    //print(rand_arr, N);
     auto finish = chrono::high_resolution_clock::now(); // сохраняем время конца работы алгоритма
     chrono::duration<double> elapsed = finish - start;  // вычисляем продолжительность работы в сек. и выводим
     cout << "Elapsed time whith out threads: " << elapsed.count() << " sec" << endl;
+    //print(rand_arr, N);
     //Сортируем c делением на потоки 
     treadsn = true;
+    for (int i = 0; i < N; i++)
+        rand_arr[i] = lef_border + rand() % range_len; // генерируем число в указанном диапазоне и записываем в массив
+    //print(rand_arr, N);
     start = chrono::high_resolution_clock::now(); // сохраняем время начала работы алгоритма
     mergesort(rand_arr, 0, N - 1, treadsn);
     //print(rand_arr, N);
     finish = chrono::high_resolution_clock::now(); // сохраняем время конца работы алгоритма
     elapsed = finish - start;  // вычисляем продолжительность работы в сек. и выводим
     cout << "Elapsed time using threads: " << elapsed.count() << " sec" << endl;
+    //print(rand_arr, N);
     delete[] rand_arr;
     return 0;
 }
